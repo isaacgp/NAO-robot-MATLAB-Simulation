@@ -1,4 +1,4 @@
-% robot_simulation.m
+%%%  robot_simulation.m
 close all
 clear
 clc
@@ -19,7 +19,7 @@ w_d = readmatrix('w.txt');
 %%
 SetupBipedRobot2;   % Biped robot in Fig.2.19, Fig.20 with center of mass and inertia tensor for each link
 M = TotalMass(1);
-Dtime = 0.005;
+Dtime = 0.005; % Sampling time
 % EndTime = 0.13;
 EndTime = 1.6;
 time = 0:Dtime:EndTime;
@@ -32,28 +32,34 @@ figure
 tic
 for k = i:tsize
     
+    err_t_Body.p = p_d((((k-1)*3)+1):(((k-1)*3)+3),1) - p_d((((k)*3)+1):(((k)*3)+3),1);
+    %     err_t_Body.R = quat2rotm( r_d(  (((k-1)*4)+1):(((k-1)*4)+4),1 )' ) ;
+    %     t_Body.p = p_d((((k-1)*3)+1):(((k-1)*3)+3),1);
+    %     t_Body.R = quat2rotm( r_d(  (((k-1)*4)+1):(((k-1)*4)+4),1 )' );
+    %     t_Body.v = dq_d(k*1:(k*1)+2,1);
+    %     t_Body.w = dq_d(k*4:(k*4)+2,1);
+    
+    
     %% Target
     Targets;
-    
 %     InverseKinematicsAllBody(BODY, t_BODY, 1);
     InverseKinematicsAll(RLEG_J6, t_Rfoot);
-%     InverseKinematicsAll(LLEG_J6, t_Lfoot);
-%     InverseKinematicsAll(LARM_J5, t_Lhand);
-%     InverseKinematicsAll(RARM_J5, t_Rhand);
-%     uLINK(1).p - t_BODY.p
-%     uLINK(1).p = uLINK(1).p - err_t_Body.p ;
+    InverseKinematicsAll(LLEG_J6, t_Lfoot);
+    InverseKinematicsAll(LARM_J5, t_Lhand);
+    InverseKinematicsAll(RARM_J5, t_Rhand);
+    
+    uLINK(1).p = uLINK(1).p - err_t_Body.p ;
 %     ForwardKinematics(1);
 %     ForwardVelocity(1);
-% uLINK(8).p
-% result = [uLINK(8).p, uLINK(7).p, uLINK(6).p, uLINK(5).p, uLINK(4).p, uLINK(3).p, uLINK(2).p, uLINK(1).p  ]
+
         ForwardDynamics;
         GroundContact()
         [P, L] = IntegrateEuler(1);  % makes the robot sink
         
 %     P   = calcP(1);   % Linear momentum
 %     L   = calcL(1);   % Angular momentum
-    %% ZMP & CoM
     com = calcCoM;
+    %% ZMP
     if k == i
         P1 = calcP(1); % calculation of robot's momentum
         L1 = calcL(1); % calculation of robot's angular momentum
@@ -65,7 +71,7 @@ for k = i:tsize
     L1 = L;
     zmp_m(k,:) = [zmpx, zmpy];
     com_m(k,:) = com';
-    
+
     %% Plot
     Plot;
 end
